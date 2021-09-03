@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EternalBlue", "EternalBlue\EternalBlue.csproj", "{4861715A-6ABB-41C0-B85A-B88DC6C84A1C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4861715A-6ABB-41C0-B85A-B88DC6C84A1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4861715A-6ABB-41C0-B85A-B88DC6C84A1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4861715A-6ABB-41C0-B85A-B88DC6C84A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4861715A-6ABB-41C0-B85A-B88DC6C84A1C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E5BBCB15-7AF0-4878-928C-91734E4E6BA1}
+	EndGlobalSection
+EndGlobal
