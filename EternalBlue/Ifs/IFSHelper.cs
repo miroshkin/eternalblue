@@ -7,6 +7,8 @@ namespace EternalBlue.Ifs
 {
     public class IFSHelper
     {
+        const int FortranYearCreation = 1957;
+        
         public static string GetResourceName(Type type)
         {
             var resourceName = (ResourceNameAttribute)Attribute.GetCustomAttribute(type, typeof(ResourceNameAttribute));
@@ -17,6 +19,16 @@ namespace EternalBlue.Ifs
             }
             
             return resourceName.Name;
+        }
+
+        /// <summary>
+        /// Gets the oldest language that is still in use
+        /// https://www.learnacademy.org/blog/first-programming-language-use-microsoft-apple/
+        /// </summary>
+        /// <returns>Fortran programming language age in years</returns>
+        public static int GetFortranAge()
+        {
+            return DateTime.Now.Year - FortranYearCreation;
         }
     }
 }

@@ -1,49 +1,95 @@
 ﻿
 @using Microsoft.EntityFrameworkCore
+@using EternalBlue.Ifs
+@using System.Reflection.Metadata.Ecma335
+@using EternalBlue.Data
 @model HomePageViewModel
+
 @{
     ViewData["Title"] = "Home Page";
 }
 
 <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
     <div class="text-center">
-        <div class="form-group col-12">
-            @Html.LabelFor(model => model.Technologies)
-            @Html.DropDownListFor(model => model.Technology, Model.Technologies, new { @class = "form-control" })
-            @Html.TextBoxFor(model => model.YearsOfExperience, new { @class = "form-control" })
-            <input type="submit" value="Submit" />
-            
-            @foreach(var item in Model.Candidates)  
-            {  
-                <table>
-                    <tr>  
-                        <td>
-                            <img src="@item.ProfilePicture" width="100px" height="100px" />
-                        </td>
-                        
-                        <td>  
-                            @Html.DisplayFor(m => item.FullName)  
-                        </td>  
-                        <td>
-                            @Html.DisplayFor(m => item.Experience)
-                            <ul>
-                                @foreach (var skill in item.Experience)
-                                {
-                                    
-                                }
-                            </ul>
-                            
-                        </td>  
-                        <td>  
-                            <a class="btn btn-success" asp-controller="Home" asp-action="Approve" asp-route-Id="@item.CandidateId">Approve</a>  
-                            <a class="btn btn-danger" asp-controller="Home" asp-action="Reject" asp-route-Id="@item.CandidateId">Reject</a>  
-                        </td>  
-                    </tr> 
-                </table>
-                 
-            }  
+        <div class="row d-flex justify-content-start">
+            <div class="form-group col-3">
+                @Html.DropDownListFor(model => model.Technology, Model.Technologies, new { @class = "form-control" })
+            </div>
+            <div class="form-group col-3">
+                @Html.DropDownListFor(model => model.YearsOfExperience, Enumerable.Range(1, IFSHelper.GetFortranAge()).Select(i => new SelectListItem { Text = i.ToString(), Value = i.ToString() }), null, new { @class = "form-control" })
+            </div>
+            <div class="form-group col-3">
+                <input class="btn btn-primary" type="submit" value="Search" />
+            </div>
+
         </div>
+
+        
+        @foreach (var item in Model.Candidates.Select((value, i) => (value, i)))
+        {
+            @if ((item.i) % 4 == 0)
+            {
+                @Html.Raw("<div class=\"row m-2\">")
+            }
+    <div class="card col-3" style="width: 18rem;">
+        <img class="card-img-top" src=@item.value.ProfilePicture alt=@item.value.FullName>
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">@item.value.FullName</h5>
+            <p class="card-text">@item.value.CandidateId</p>
+        </div>
+
+        <ul class="list-group list-group-flush align-self-start">
+            @foreach (var skill in item.value.Experience)
+            {
+                <li class="list-group-item">@skill.TechnologyId @skill.YearsOfExperience</li>
+            }
+        </ul>
+
+        <div class="row">
+            <a class="btn btn-success align-self-end m-2" asp-controller="Home" asp-action="Approve" asp-route-Id="@item.value.CandidateId">Approve</a>
+            <a class="btn btn-danger align-self-end m-2" asp-controller="Home" asp-action="Reject" asp-route-Id="@item.value.CandidateId">Reject</a>
+
+        </div>
+        
+
+    </div>
+            @if ((item.i) % 4 == 3)
+            {
+                @Html.Raw("</div>")
+            }
+
+            @*<table>
+                <tr>
+                    <td>
+                        <img src="@item.ProfilePicture" width="100px" height="100px" />
+                    </td>
+
+                    <td>
+                        @Html.DisplayFor(m => item.FullName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(m => item.Experience)
+                        <ul>
+                            @foreach (var skill in item.Experience)
+                            {
+
+                            }
+                        </ul>
+
+                    </td>
+                    <td>
+                        <a class="btn btn-success" asp-controller="Home" asp-action="Approve" asp-route-Id="@item.CandidateId">Approve</a>
+                        <a class="btn btn-danger" asp-controller="Home" asp-action="Reject" asp-route-Id="@item.CandidateId">Reject</a>
+                    </td>
+                </tr>
+            </table>*@
+
+        }
+        @Html.Raw("</div>")
+
+
+
     </div>
 </form>
 
-    
+
