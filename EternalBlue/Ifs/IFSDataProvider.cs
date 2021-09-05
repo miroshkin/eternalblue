@@ -22,9 +22,9 @@ namespace EternalBlue.Ifs
             _httpClient = httpClient;
         }
 
-        public ICollection<T> GetItems<T>(string resource, CancellationToken ct)
+        public async Task<ICollection<T>> GetItems<T>(string resource, CancellationToken ct)
         {
-            return _httpClient.GetFromJsonAsync<ICollection<T>>(resource, ct).Result;
+            return await _httpClient.GetFromJsonAsync<ICollection<T>>(resource, ct);
         }
     }
 }

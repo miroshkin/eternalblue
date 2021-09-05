@@ -9,6 +9,6 @@ namespace EternalBlue.Ifs
 {
     public interface IIfsDataProvider
     {
-        public ICollection<T> GetItems<T>(string resource, CancellationToken ct);
+        public Task<ICollection<T>> GetItems<T>(string resource, CancellationToken ct);
     }
 }

@@ -48,14 +48,17 @@ namespace EternalBlue.Controllers
             return View("Index");
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var model = new HomePageViewModel();
 
-            var candidates = _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)),new CancellationToken()).ToList();
-            var technologies = _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken()).ToList();
-            var processedCandidates = _context.ProcessedCandidates.ToList();
+            var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)),new CancellationToken());
+            var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
+            var processedCandidates = await _context.ProcessedCandidates.ToListAsync();
+
             model.Candidates = candidates.Where(c => processedCandidates.TrueForAll(pc => c.CandidateId != pc.Id)).ToList();
+            FillSkillNames(model.Candidates, technologies);
+            
             model.Technologies = technologies.Select(t => new SelectListItem(t.Name,t.TechnologyId)).OrderBy(t => t.Text).ToList();
             model.YearsOfExperience = 0;
 
@@ -63,18 +66,17 @@ namespace EternalBlue.Controllers
         }
 
         [HttpPost]
-        public IActionResult Index(string technology, int yearsOfExperience)
+        public async Task<IActionResult> Index(string technology, int yearsOfExperience)
         {
             var model = new HomePageViewModel();
 
-            var candidates = _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken()).ToList();
-            var technologies = _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken()).ToList();
-            var processedCandidates = _context.ProcessedCandidates.LoadAsync();
+            var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
+            var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
+            var processedCandidates =  await _context.ProcessedCandidates.ToListAsync();
 
             var filtersAll = new List<Func<Candidate, bool>>();
             filtersAll.Add(CreateFilter((technology, yearsOfExperience)));
             
-
             var resultFilter = GetResultFilter(filtersAll);
 
             var searchResult = new List<Candidate>();
@@ -87,7 +89,7 @@ namespace EternalBlue.Controllers
             return View(model);
         }
 
-        private void FillSkillNames(List<Candidate> candidates, List<Technology> technologies)
+        private void FillSkillNames(ICollection<Candidate> candidates, ICollection<Technology> technologies)
         {
             foreach (var candidate in candidates)
             {
