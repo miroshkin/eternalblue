@@ -69,7 +69,7 @@ namespace EternalBlue.Controllers
 
             var candidates = _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken()).ToList();
             var technologies = _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken()).ToList();
-            var processedCandidates = _context.ProcessedCandidates.ToList();
+            var processedCandidates = _context.ProcessedCandidates.LoadAsync();
 
             var filtersAll = new List<Func<Candidate, bool>>();
             filtersAll.Add(CreateFilter((technology, yearsOfExperience)));
@@ -79,11 +79,30 @@ namespace EternalBlue.Controllers
 
             var searchResult = new List<Candidate>();
             var filteredCandidates = candidates.Where(resultFilter).ToList();
+            FillSkillNames(filteredCandidates, technologies);
             model.Candidates = filteredCandidates;
             model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId)).OrderBy(t => t.Text).ToList();
             model.YearsOfExperience = 0;
 
             return View(model);
+        }
+
+        private void FillSkillNames(List<Candidate> candidates, List<Technology> technologies)
+        {
+            foreach (var candidate in candidates)
+            {
+                foreach (var technology in technologies)
+                {
+                    foreach (var skill in candidate.Experience)
+                    {
+                        if (skill.TechnologyId == technology.TechnologyId)
+                        {
+                            skill.TechnologyName = technology.Name;
+                        }
+                    }
+                }
+
+            }
         }
 
         private static Func<Candidate, bool> GetResultFilter(List<Func<Candidate, bool>> filtersAll)

@@ -13,5 +13,7 @@ namespace EternalBlue.Data
 
         [JsonPropertyName("yearsOfExperience")]
         public int YearsOfExperience { get; set; }
+
+        public string TechnologyName { get; set; }
     }
 }
