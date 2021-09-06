@@ -44,8 +44,8 @@
                         }
                     </div>
                     <div class="row mt-auto">
-                        <a class="btn btn-success align-self-end w-50 mt-3" href='@Url.Action("Confirm", "Candidates", new {CandidateId = @item.value.CandidateId, Status = CandidateStatus.Approved, CandidateInfo = JsonConvert.SerializeObject(@item.value)})'>Approve</a>
-                        <a class="btn btn-danger align-self-end w-50" href='@Url.Action("Confirm", "Candidates", new {CandidateId = @item.value.CandidateId, Status = CandidateStatus.Rejected})'>Reject</a>
+                        <a class="btn btn-success align-self-end w-50 mt-3" href='@Url.Action("Confirm", "Candidates", new {CandidateId = @item.value.CandidateId, FullName = @item.value.FullName, Status = CandidateStatus.Approved, CandidateInfo = JsonConvert.SerializeObject(@item.value)})'>Approve</a>
+                        <a class="btn btn-danger align-self-end w-50" href='@Url.Action("Confirm", "Candidates", new {CandidateId = @item.value.CandidateId, FullName = @item.value.FullName, Status = CandidateStatus.Rejected})'>Reject</a>
                     </div>
                 </div>
 

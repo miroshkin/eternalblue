@@ -52,9 +52,9 @@ namespace EternalBlue.Controllers
             return View("Index");
         }
 
-        public IActionResult Confirm(string candidateId, string status, string candidateInfo)
+        public IActionResult Confirm(string candidateId, string status, string candidateInfo, string fullName)
         {
-            return View("Confirm", new ConfirmationPageViewModel(){Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo});
+            return View("Confirm", new ConfirmationPageViewModel(){Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo, FullName = fullName});
         }
 
 
