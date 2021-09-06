@@ -56,7 +56,7 @@ namespace EternalBlue.Controllers
 
             _context.SaveChanges();
 
-            return View("Index");
+            return RedirectToAction("Index");
         }
 
         public IActionResult Approve(string candidateId, string candidateInfo)
@@ -86,7 +86,9 @@ namespace EternalBlue.Controllers
             
             _context.SaveChanges();
 
-            return View("Index");
+
+
+            return RedirectToAction("Index");
         }
 
         public IActionResult Confirm(string candidateId, string status, string candidateInfo, string fullName)
@@ -112,7 +114,7 @@ namespace EternalBlue.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Processed()
+        public async Task<IActionResult> Approved()
         {
             var model = new CandidatesPageViewModel(){ShowApprovedCandidatesOnly = true};
 
