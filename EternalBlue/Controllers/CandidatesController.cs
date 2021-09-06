@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Skill = EternalBlue.Models.Skill;
 
 namespace EternalBlue.Controllers
 {
@@ -35,7 +36,7 @@ namespace EternalBlue.Controllers
                 ((List<Candidate>)TempData["candidates"]).First(c => c.CandidateId == Guid.Parse(candidateId));
             
             _context.ProcessedCandidates.Add(new ProcessedCandidate()
-            { Id = candidate.CandidateId, Status = CandidateStatus.Rejected });
+            { Id = candidate.CandidateId, Approved = false });
             _context.SaveChanges();
 
             return View("Index");
@@ -44,9 +45,28 @@ namespace EternalBlue.Controllers
         public IActionResult Approve(string candidateId, string candidateInfo)
         {
             var candidate = JsonConvert.DeserializeObject<Candidate>(candidateInfo);
+
+            var processedCandidate = new ProcessedCandidate()
+            {
+                Id = candidate.CandidateId,
+                Approved = true,
+                FullName = candidate.FullName,
+                ProfilePicture = candidate.ProfilePicture,
+                Email = candidate.Email,
+                CandidateSkills = candidate.Experience.Select(s => new ProcessedCandidateSkill()
+                {
+                    ProcessedCandidateId = candidate.CandidateId,
+                    Skill = new Skill()
+                    {
+                        TechnologyId = Guid.Parse(s.TechnologyId),
+                        YearsOfExperience = s.YearsOfExperience,
+                        TechnologyName = s.TechnologyName
+                    }
+                }).ToList()
+            };
+
+            _context.ProcessedCandidates.Add(processedCandidate);
             
-            _context.ProcessedCandidates.Add(new ProcessedCandidate()
-                { Id = candidate.CandidateId, Status = CandidateStatus.Approved });
             _context.SaveChanges();
 
             return View("Index");

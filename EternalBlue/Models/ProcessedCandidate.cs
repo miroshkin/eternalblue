@@ -12,7 +12,17 @@ namespace EternalBlue.Models
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Guid Id { get; set; }
 
-        [MaxLength(50)]
-        public string Status { get; set; }
+        public bool Approved { get; set; }
+
+        public ICollection<ProcessedCandidateSkill> CandidateSkills { get; set; }
+
+        [MaxLength(200)]
+        public string FullName { get; set; }
+
+        public string ProfilePicture { get; set; }
+
+        [MaxLength(200)]
+        public string Email { get; set; }
+
     }
 }
