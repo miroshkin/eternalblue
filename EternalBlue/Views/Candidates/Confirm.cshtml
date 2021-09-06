@@ -1,19 +1,23 @@
 ﻿@using EternalBlue.Ifs
+@using System.Diagnostics.Eventing.Reader
 @model ConfirmationPageViewModel
 @{
     ViewData["Title"] = "Confirmation";
 }
 <h1>@ViewData["Title"]</h1>
 
-
 <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
-
-    <div>
-        Do you really want to @Html.Raw(@Model.Status == CandidateStatus.Approved? "approve": "reject") candidate @Model.FullName ?
+    <div class="row text-center">
+        <p>Do you really want to @Html.Raw(@Model.Status == CandidateStatus.Approved? "approve": "reject") candidate @Model.FullName ?</p>
+        
+        @if (@Model.Status == CandidateStatus.Approved)
+        {
+            <a class="btn btn-success align-self-end" href='@Url.Action("Approve", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
+        }
+        @if (@Model.Status == CandidateStatus.Rejected)
+        {
+            <a class="btn btn-success" href='@Url.Action("Reject", "Candidates", new {CandidateId = @Model.CandidateId})'>Yes</a>
+        }
+        <a class="btn btn-danger ml-3" asp-controller="Candidates" asp-action="Index">No</a>
     </div>
-    <div class="row mt-auto">
-        <a class="btn btn-success align-self-end" href='@Url.Action("Approve", "Candidates", new { Id = @Model.Id})'>Yes</a>
-        <a class="btn btn-danger align-self-end" asp-controller="Candidates" asp-action="Index">No</a>
-    </div>
-
 </form>

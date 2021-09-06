@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace EternalBlue.Controllers
 {
@@ -27,27 +28,33 @@ namespace EternalBlue.Controllers
             _context = context;
         }
 
-        public IActionResult Reject(string id)
+        public IActionResult Reject(string candidateId)
         {
+
+            var candidate =
+                ((List<Candidate>)TempData["candidates"]).First(c => c.CandidateId == Guid.Parse(candidateId));
+            
             _context.ProcessedCandidates.Add(new ProcessedCandidate()
-            { Id = Guid.Parse(id), Status = CandidateStatus.Rejected });
+            { Id = candidate.CandidateId, Status = CandidateStatus.Rejected });
             _context.SaveChanges();
 
             return View("Index");
         }
 
-        public IActionResult Approve(string id)
+        public IActionResult Approve(string candidateId, string candidateInfo)
         {
+            var candidate = JsonConvert.DeserializeObject<Candidate>(candidateInfo);
+            
             _context.ProcessedCandidates.Add(new ProcessedCandidate()
-                { Id = Guid.Parse(id), Status = CandidateStatus.Approved });
+                { Id = candidate.CandidateId, Status = CandidateStatus.Approved });
             _context.SaveChanges();
 
             return View("Index");
         }
 
-        public IActionResult Confirm(string id, string fullName, string status)
+        public IActionResult Confirm(string candidateId, string status, string candidateInfo)
         {
-            return View("Confirm", new ConfirmationPageViewModel(){Status = status, FullName = fullName, Id = id});
+            return View("Confirm", new ConfirmationPageViewModel(){Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo});
         }
 
 

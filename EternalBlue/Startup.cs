@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EternalBlue.Ifs;
 using EternalBlue.Models;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -37,7 +38,8 @@ namespace EternalBlue
                     clientCfg.BaseAddress = new Uri(cfg.ApiAddress);
                 });
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddSessionStateTempDataProvider();
+            services.AddSession();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,7 +61,7 @@ namespace EternalBlue
             app.UseRouting();
 
             app.UseAuthorization();
-
+            app.UseSession();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

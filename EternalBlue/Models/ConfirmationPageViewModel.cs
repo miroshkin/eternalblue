@@ -6,8 +6,9 @@ namespace EternalBlue.Models
 {
     public class ConfirmationPageViewModel
     {
-        public string Id { get; set; }
-        public string FullName { get; set; }
+        public string CandidateId { get; set; }
         public string Status { get; set; }
+        public string FullName { get; set; }
+        public string CandidateInfo { get; set; }
     }
 }

@@ -3,35 +3,40 @@
 @using EternalBlue.Ifs
 @using System.Reflection.Metadata.Ecma335
 @using EternalBlue.Data
+@using Newtonsoft.Json
 @model CandidatesPageViewModel
 
 @{
     ViewData["Title"] = "Candidates Page";
 }
 
-<form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
+<form method="post" enctype="multipart/form-data" asp-controller="Candidates" asp-action="Index">
     <div class="text-center">
-        <div class="row d-flex justify-content-start">
+        <div class="row d-flex justify-content-start align-items-end">
             <div class="form-group col-3">
+                @Html.LabelFor(model => model.Technology, "Technology")
                 @Html.DropDownListFor(model => model.Technology, Model.Technologies, new { @class = "form-control" })
             </div>
             <div class="form-group col-3">
+                @Html.LabelFor(model => model.YearsOfExperience, "Years of experience")
                 @Html.DropDownListFor(model => model.YearsOfExperience, Enumerable.Range(1, IFSHelper.GetFortranAge()).Select(i => new SelectListItem { Text = i.ToString(), Value = i.ToString() }), null, new { @class = "form-control" })
             </div>
             <div class="form-group col-3">
-                <input class="btn btn-primary" type="submit" value="Search" />
+
+                <input class="btn btn-primary w-100" type="submit" value="Search" />
             </div>
         </div>
 
 
         @foreach (var item in Model.Candidates.Select((value, i) => (value, i)))
         {
-            @if ((item.i) % 4 == 0) {@Html.Raw("<div class=\"row m-2 card-group\">")}
+            @if ((item.i) % 4 == 0)
+            {@Html.Raw("<div class=\"row card-group\">")}
             <div class="card col-3" style="width: 18rem;">
                 <img class="card-img-top" src=@item.value.ProfilePicture alt=@item.value.FullName>
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@item.value.FullName</h5>
-                    <p class="card-text">@item.value.CandidateId</p>
+                    <p class="card-text">@item.value.Email</p>
                     <div>
                         @foreach (var skill in item.value.Experience.OrderByDescending(s => s.YearsOfExperience))
                         {
@@ -39,13 +44,13 @@
                         }
                     </div>
                     <div class="row mt-auto">
-                    <a class="btn btn-success align-self-end w-50 mt-3" href='@Url.Action("Confirm", "Candidates", new { Id = @item.value.CandidateId, Status = CandidateStatus.Approved, FullName = @item.value.FullName })' >Approve</a>
-                    <a class="btn btn-danger align-self-end w-50" asp-controller="Candidates" asp-action=@Url.Action("Confirm", "Candidates", new { Id = @item.value.CandidateId, Status = CandidateStatus.Rejected, FullName = @item.value.FullName })>Reject</a>
-                </div>
+                        <a class="btn btn-success align-self-end w-50 mt-3" href='@Url.Action("Confirm", "Candidates", new {CandidateId = @item.value.CandidateId, Status = CandidateStatus.Approved, CandidateInfo = JsonConvert.SerializeObject(@item.value)})'>Approve</a>
+                        <a class="btn btn-danger align-self-end w-50" href='@Url.Action("Confirm", "Candidates", new {CandidateId = @item.value.CandidateId, Status = CandidateStatus.Rejected})'>Reject</a>
+                    </div>
                 </div>
 
-                
-                
+
+
             </div>
             @if ((item.i) % 4 == 3) {@Html.Raw("</div>")}
         }
@@ -53,5 +58,3 @@
 
     </div>
 </form>
-
-
