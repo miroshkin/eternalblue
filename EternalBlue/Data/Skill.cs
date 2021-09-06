@@ -9,7 +9,7 @@ namespace EternalBlue.Data
     public class Skill
     {
         [JsonPropertyName("technologyId")]
-        public string TechnologyId { get; set; }
+        public Guid TechnologyId { get; set; }
 
         [JsonPropertyName("yearsOfExperience")]
         public int YearsOfExperience { get; set; }

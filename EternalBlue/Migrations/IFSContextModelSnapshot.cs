@@ -81,13 +81,13 @@ namespace EternalBlue.Migrations
 
                     b.HasKey("SkillId");
 
-                    b.ToTable("Skill");
+                    b.ToTable("Skills");
                 });
 
             modelBuilder.Entity("EternalBlue.Models.ProcessedCandidateSkill", b =>
                 {
                     b.HasOne("EternalBlue.Models.ProcessedCandidate", "ProcessedCandidate")
-                        .WithMany("CandidateSkills")
+                        .WithMany("ProcessedCandidateSkills")
                         .HasForeignKey("ProcessedCandidateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -105,7 +105,7 @@ namespace EternalBlue.Migrations
 
             modelBuilder.Entity("EternalBlue.Models.ProcessedCandidate", b =>
                 {
-                    b.Navigation("CandidateSkills");
+                    b.Navigation("ProcessedCandidateSkills");
                 });
 
             modelBuilder.Entity("EternalBlue.Models.Skill", b =>

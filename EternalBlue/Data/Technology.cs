@@ -11,7 +11,7 @@ namespace EternalBlue.Data
     public class Technology
     {
         [JsonPropertyName("guid")]
-        public string TechnologyId { get; set; }
+        public Guid TechnologyId { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }

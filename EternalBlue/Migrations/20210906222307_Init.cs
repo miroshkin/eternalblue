@@ -23,7 +23,7 @@ namespace EternalBlue.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Skill",
+                name: "Skills",
                 columns: table => new
                 {
                     SkillId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -33,7 +33,7 @@ namespace EternalBlue.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Skill", x => x.SkillId);
+                    table.PrimaryKey("PK_Skills", x => x.SkillId);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,9 +54,9 @@ namespace EternalBlue.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProcessedCandidateSkills_Skill_SkillId",
+                        name: "FK_ProcessedCandidateSkills_Skills_SkillId",
                         column: x => x.SkillId,
-                        principalTable: "Skill",
+                        principalTable: "Skills",
                         principalColumn: "SkillId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -81,7 +81,7 @@ namespace EternalBlue.Migrations
                 name: "ProcessedCandidates");
 
             migrationBuilder.DropTable(
-                name: "Skill");
+                name: "Skills");
         }
     }
 }

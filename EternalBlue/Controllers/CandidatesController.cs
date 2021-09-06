@@ -29,14 +29,31 @@ namespace EternalBlue.Controllers
             _context = context;
         }
 
-        public IActionResult Reject(string candidateId)
+        public IActionResult Reject(string candidateId, string candidateInfo)
         {
+            var candidate = JsonConvert.DeserializeObject<Candidate>(candidateInfo);
 
-            var candidate =
-                ((List<Candidate>)TempData["candidates"]).First(c => c.CandidateId == Guid.Parse(candidateId));
-            
-            _context.ProcessedCandidates.Add(new ProcessedCandidate()
-            { Id = candidate.CandidateId, Approved = false });
+            var processedCandidate = new ProcessedCandidate()
+            {
+                Id = candidate.CandidateId,
+                Approved = false,
+                FullName = candidate.FullName,
+                ProfilePicture = candidate.ProfilePicture,
+                Email = candidate.Email,
+                ProcessedCandidateSkills = candidate.Experience.Select(s => new ProcessedCandidateSkill()
+                {
+                    ProcessedCandidateId = candidate.CandidateId,
+                    Skill = new Skill()
+                    {
+                        TechnologyId = s.TechnologyId,
+                        YearsOfExperience = s.YearsOfExperience,
+                        TechnologyName = s.TechnologyName
+                    }
+                }).ToList()
+            };
+
+            _context.ProcessedCandidates.Add(processedCandidate);
+
             _context.SaveChanges();
 
             return View("Index");
@@ -53,12 +70,12 @@ namespace EternalBlue.Controllers
                 FullName = candidate.FullName,
                 ProfilePicture = candidate.ProfilePicture,
                 Email = candidate.Email,
-                CandidateSkills = candidate.Experience.Select(s => new ProcessedCandidateSkill()
+                ProcessedCandidateSkills = candidate.Experience.Select(s => new ProcessedCandidateSkill()
                 {
                     ProcessedCandidateId = candidate.CandidateId,
                     Skill = new Skill()
                     {
-                        TechnologyId = Guid.Parse(s.TechnologyId),
+                        TechnologyId = s.TechnologyId,
                         YearsOfExperience = s.YearsOfExperience,
                         TechnologyName = s.TechnologyName
                     }
@@ -89,10 +106,39 @@ namespace EternalBlue.Controllers
             model.Candidates = candidates.Where(c => processedCandidates.TrueForAll(pc => c.CandidateId != pc.Id)).ToList();
             FillSkillNames(model.Candidates, technologies);
 
-            model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId)).OrderBy(t => t.Text).ToList();
+            model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId.ToString())).OrderBy(t => t.Text).ToList();
             model.YearsOfExperience = 0;
 
             return View(model);
+        }
+
+        public async Task<IActionResult> Processed()
+        {
+            var model = new CandidatesPageViewModel(){ShowApprovedCandidatesOnly = true};
+
+            var processedCandidates = await _context.ProcessedCandidates
+                    .Include(c => c.ProcessedCandidateSkills)
+                    .ThenInclude(s => s.Skill)
+                    .Include(c => c.ProcessedCandidateSkills)
+                    .ThenInclude(c => c.ProcessedCandidate)
+                    .Where(c => c.Approved)
+                    .ToListAsync();
+
+            model.Candidates = processedCandidates.Select(c => new Candidate()
+            {
+                Email = c.Email,
+                FullName = c.FullName,
+                ProfilePicture = c.ProfilePicture,
+                CandidateId = c.Id,
+                Experience = c.ProcessedCandidateSkills.Select(s => new Data.Skill()
+                {
+                    YearsOfExperience = s.Skill.YearsOfExperience,
+                    TechnologyId = s.Skill.TechnologyId,
+                    TechnologyName = s.Skill.TechnologyName
+                }).ToList()
+            }).ToList();
+
+            return View("Index", model);
         }
 
         [HttpPost]
@@ -113,7 +159,7 @@ namespace EternalBlue.Controllers
             var filteredCandidates = candidates.Where(resultFilter).ToList();
             FillSkillNames(filteredCandidates, technologies);
             model.Candidates = filteredCandidates;
-            model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId)).OrderBy(t => t.Text).ToList();
+            model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId.ToString())).OrderBy(t => t.Text).ToList();
             model.YearsOfExperience = 0;
 
             return View(model);
@@ -161,7 +207,7 @@ namespace EternalBlue.Controllers
 
         private Func<Candidate, bool> CreateFilter((string, int) filter1)
         {
-            return c => c.Experience.Any(s => s.TechnologyId == filter1.Item1 && s.YearsOfExperience >= filter1.Item2);
+            return c => c.Experience.Any(s => s.TechnologyId.ToString() == filter1.Item1 && s.YearsOfExperience >= filter1.Item2);
         }
     }
 }

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EternalBlue.Migrations
 {
     [DbContext(typeof(IFSContext))]
-    [Migration("20210906213938_Init")]
+    [Migration("20210906222307_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,13 +83,13 @@ namespace EternalBlue.Migrations
 
                     b.HasKey("SkillId");
 
-                    b.ToTable("Skill");
+                    b.ToTable("Skills");
                 });
 
             modelBuilder.Entity("EternalBlue.Models.ProcessedCandidateSkill", b =>
                 {
                     b.HasOne("EternalBlue.Models.ProcessedCandidate", "ProcessedCandidate")
-                        .WithMany("CandidateSkills")
+                        .WithMany("ProcessedCandidateSkills")
                         .HasForeignKey("ProcessedCandidateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -107,7 +107,7 @@ namespace EternalBlue.Migrations
 
             modelBuilder.Entity("EternalBlue.Models.ProcessedCandidate", b =>
                 {
-                    b.Navigation("CandidateSkills");
+                    b.Navigation("ProcessedCandidateSkills");
                 });
 
             modelBuilder.Entity("EternalBlue.Models.Skill", b =>

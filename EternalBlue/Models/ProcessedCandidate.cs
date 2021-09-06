@@ -14,7 +14,7 @@ namespace EternalBlue.Models
 
         public bool Approved { get; set; }
 
-        public ICollection<ProcessedCandidateSkill> CandidateSkills { get; set; }
+        public ICollection<ProcessedCandidateSkill> ProcessedCandidateSkills { get; set; }
 
         [MaxLength(200)]
         public string FullName { get; set; }

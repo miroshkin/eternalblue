@@ -17,6 +17,8 @@ namespace EternalBlue.Models
         public DbSet<ProcessedCandidate> ProcessedCandidates { get; set; }
 
         public DbSet<ProcessedCandidateSkill> ProcessedCandidateSkills { get; set; }
+
+        public DbSet<Skill> Skills { get; set; }
         
     }
 }

@@ -16,7 +16,7 @@
         }
         @if (@Model.Status == CandidateStatus.Rejected)
         {
-            <a class="btn btn-success" href='@Url.Action("Reject", "Candidates", new {CandidateId = @Model.CandidateId})'>Yes</a>
+            <a class="btn btn-success" href='@Url.Action("Reject", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
         }
         <a class="btn btn-danger ml-3" asp-controller="Candidates" asp-action="Index">No</a>
     </div>
