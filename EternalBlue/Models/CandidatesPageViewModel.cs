@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EternalBlue.Models
 {
-    public class HomePageViewModel
+    public class CandidatesPageViewModel
     {
         public List<ProcessedCandidate> ProcessedCandidates { get; set; }
         public List<Candidate> Candidates { get; set; }

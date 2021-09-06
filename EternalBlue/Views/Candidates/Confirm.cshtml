@@ -1,0 +1,19 @@
+﻿@using EternalBlue.Ifs
+@model ConfirmationPageViewModel
+@{
+    ViewData["Title"] = "Confirmation";
+}
+<h1>@ViewData["Title"]</h1>
+
+
+<form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
+
+    <div>
+        Do you really want to @Html.Raw(@Model.Status == CandidateStatus.Approved? "approve": "reject") candidate @Model.FullName ?
+    </div>
+    <div class="row mt-auto">
+        <a class="btn btn-success align-self-end" href='@Url.Action("Approve", "Candidates", new { Id = @Model.Id})'>Yes</a>
+        <a class="btn btn-danger align-self-end" asp-controller="Candidates" asp-action="Index">No</a>
+    </div>
+
+</form>
