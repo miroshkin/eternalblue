@@ -6,18 +6,18 @@
 }
 <h1>@ViewData["Title"]</h1>
 
-<form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
-    <div class="row text-center">
-        <p>Do you really want to @Html.Raw(@Model.Status == CandidateStatus.Approved? "approve": "reject") candidate @Model.FullName ?</p>
+<form class="form-inline" method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
+    <div class="form-group mb-2">
         
+        Do you really want to @Html.Raw(@Model.Status == CandidateStatus.Approved ? "approve" : "reject") candidate @Model.FullName ?
+    </div>
         @if (@Model.Status == CandidateStatus.Approved)
         {
-            <a class="btn btn-success align-self-end" href='@Url.Action("Approve", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
+            <a class="btn btn-success mb-2 ml-2" href='@Url.Action("Approve", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
         }
         @if (@Model.Status == CandidateStatus.Rejected)
         {
-            <a class="btn btn-success" href='@Url.Action("Reject", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
+            <a class="btn btn-success mb-2 ml-2" href='@Url.Action("Reject", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
         }
-        <a class="btn btn-danger ml-3" asp-controller="Candidates" asp-action="Index">No</a>
-    </div>
+        <a class="btn btn-danger mb-2 ml-2" asp-controller="Candidates" asp-action="Index">No</a>
 </form>

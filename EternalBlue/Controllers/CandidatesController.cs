@@ -86,14 +86,12 @@ namespace EternalBlue.Controllers
             
             _context.SaveChanges();
 
-
-
             return RedirectToAction("Index");
         }
 
         public IActionResult Confirm(string candidateId, string status, string candidateInfo, string fullName)
         {
-            return View("Confirm", new ConfirmationPageViewModel(){Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo, FullName = fullName});
+            return View("Confirm", new ConfirmationPageViewModel(){ Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo, FullName = fullName});
         }
 
 
@@ -108,10 +106,25 @@ namespace EternalBlue.Controllers
             model.Candidates = candidates.Where(c => processedCandidates.TrueForAll(pc => c.CandidateId != pc.Id)).ToList();
             FillSkillNames(model.Candidates, technologies);
 
-            model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId.ToString())).OrderBy(t => t.Text).ToList();
-            model.YearsOfExperience = 0;
+            LoadTechnologies(model, technologies);
+            LoadYearsOfExperience(model);
 
             return View(model);
+        }
+
+        private void LoadYearsOfExperience(CandidatesPageViewModel model)
+        {
+            model.YearsOfExperience = new List<SelectListItem>();
+            model.YearsOfExperience.Add(new SelectListItem("Any", "0", true));
+            model.YearsOfExperience.AddRange(Enumerable.Range(1, IFSHelper.GetFortranAge()).Select(c => new SelectListItem(c.ToString(),c.ToString())));
+        }
+
+        private static void LoadTechnologies(CandidatesPageViewModel model, ICollection<Technology> technologies)
+        {
+            model.Technologies = new List<SelectListItem>();
+            model.Technologies.Add(new SelectListItem("Any", "Any", true));
+            model.Technologies.AddRange(technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId.ToString()))
+                .OrderBy(t => t.Text).ToList());
         }
 
         public async Task<IActionResult> Approved()
@@ -152,17 +165,13 @@ namespace EternalBlue.Controllers
             var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
             var processedCandidates = await _context.ProcessedCandidates.ToListAsync();
 
-            var filtersAll = new List<Func<Candidate, bool>>();
-            filtersAll.Add(CreateFilter((technology, yearsOfExperience)));
 
-            var resultFilter = GetResultFilter(filtersAll);
-
-            var searchResult = new List<Candidate>();
-            var filteredCandidates = candidates.Where(resultFilter).ToList();
+            var filteredCandidates = candidates.Where(GetFilter(technology, yearsOfExperience)).ToList();
             FillSkillNames(filteredCandidates, technologies);
             model.Candidates = filteredCandidates;
-            model.Technologies = technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId.ToString())).OrderBy(t => t.Text).ToList();
-            model.YearsOfExperience = 0;
+
+            LoadTechnologies(model, technologies);
+            LoadYearsOfExperience(model);
 
             return View(model);
         }
@@ -207,9 +216,13 @@ namespace EternalBlue.Controllers
             return candidate => filter(candidate) && nextFilter(candidate);
         }
 
-        private Func<Candidate, bool> CreateFilter((string, int) filter1)
+        private Func<Candidate, bool> GetFilter(string technology, int yearsOfExperience)
         {
-            return c => c.Experience.Any(s => s.TechnologyId.ToString() == filter1.Item1 && s.YearsOfExperience >= filter1.Item2);
+            if (technology == "Any")
+            {
+                return c => c.Experience.Any(s => s.YearsOfExperience >= yearsOfExperience);
+            }
+            return c => c.Experience.Any(s => s.TechnologyId.ToString() == technology && s.YearsOfExperience >= yearsOfExperience);
         }
     }
 }

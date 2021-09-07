@@ -11,7 +11,7 @@ namespace EternalBlue.Models
         public List<SelectListItem> Technologies { get; set; }
         public SelectListItem Technology { get; set; }
 
-        public int YearsOfExperience { get; set; }
+        public List<SelectListItem> YearsOfExperience { get; set; }
 
         public bool ShowApprovedCandidatesOnly { get; set; }
     }
