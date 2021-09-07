@@ -101,9 +101,11 @@ namespace EternalBlue.Controllers
 
             var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
             var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
-            var processedCandidates = await _context.ProcessedCandidates.ToListAsync();
+            var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
 
-            model.Candidates = candidates.Where(c => processedCandidates.TrueForAll(pc => c.CandidateId != pc.Id)).ToList();
+            model.Candidates = candidates.Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
+
+
             FillSkillNames(model.Candidates, technologies);
 
             LoadTechnologies(model, technologies);
@@ -137,6 +139,7 @@ namespace EternalBlue.Controllers
                     .Include(c => c.ProcessedCandidateSkills)
                     .ThenInclude(c => c.ProcessedCandidate)
                     .Where(c => c.Approved)
+                    .AsNoTracking()
                     .ToListAsync();
 
             model.Candidates = processedCandidates.Select(c => new Candidate()
@@ -163,10 +166,12 @@ namespace EternalBlue.Controllers
 
             var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
             var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
-            var processedCandidates = await _context.ProcessedCandidates.ToListAsync();
+            var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
 
 
-            var filteredCandidates = candidates.Where(GetFilter(technology, yearsOfExperience)).ToList();
+            var filteredCandidates = candidates.Where(GetFilter(technology, yearsOfExperience))
+                .Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
+
             FillSkillNames(filteredCandidates, technologies);
             model.Candidates = filteredCandidates;
 
