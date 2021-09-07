@@ -139,7 +139,6 @@ namespace EternalBlue.Controllers
                     .Include(c => c.ProcessedCandidateSkills)
                     .ThenInclude(c => c.ProcessedCandidate)
                     .Where(c => c.Approved)
-                    .AsNoTracking()
                     .ToListAsync();
 
             model.Candidates = processedCandidates.Select(c => new Candidate()
