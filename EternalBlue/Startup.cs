@@ -8,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using EternalBlue.Ifs;
+using EternalBlue.Mapping;
 using EternalBlue.Models;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +40,12 @@ namespace EternalBlue
                     clientCfg.BaseAddress = new Uri(cfg.ApiAddress);
                 });
 
-            services.AddControllersWithViews().AddSessionStateTempDataProvider();
+            services.AddSingleton(new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new IFSMappingProfile());
+            }).CreateMapper());
+
+            services.AddControllersWithViews();
             services.AddSession();
         }
 

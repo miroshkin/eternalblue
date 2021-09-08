@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using EternalBlue.Data;
 using EternalBlue.Ifs;
 using EternalBlue.Models;
@@ -21,69 +23,32 @@ namespace EternalBlue.Controllers
         private readonly ILogger<CandidatesController> _logger;
         private IIfsDataProvider _dataProvider;
         private IFSContext _context;
+        private IMapper _mapper;
 
-        public CandidatesController(ILogger<CandidatesController> logger, IIfsDataProvider dataProvider, IFSContext context)
+        public CandidatesController(ILogger<CandidatesController> logger, IIfsDataProvider dataProvider, IFSContext context, IMapper mapper)
         {
             _logger = logger;
             _dataProvider = dataProvider;
             _context = context;
+            _mapper = mapper;
         }
 
-        public IActionResult Reject(string candidateId, string candidateInfo)
+        public IActionResult Reject(string candidateInfo)
         {
-            var candidate = JsonConvert.DeserializeObject<Candidate>(candidateInfo);
-
-            var processedCandidate = new ProcessedCandidate()
-            {
-                Id = candidate.CandidateId,
-                Approved = false,
-                FullName = candidate.FullName,
-                ProfilePicture = candidate.ProfilePicture,
-                Email = candidate.Email,
-                ProcessedCandidateSkills = candidate.Experience.Select(s => new ProcessedCandidateSkill()
-                {
-                    ProcessedCandidateId = candidate.CandidateId,
-                    Skill = new Skill()
-                    {
-                        TechnologyId = s.TechnologyId,
-                        YearsOfExperience = s.YearsOfExperience,
-                        TechnologyName = s.TechnologyName
-                    }
-                }).ToList()
-            };
-
-            _context.ProcessedCandidates.Add(processedCandidate);
-
-            _context.SaveChanges();
-
-            return RedirectToAction("Index");
+            return ProcessCandidate(candidateInfo, false);
         }
 
-        public IActionResult Approve(string candidateId, string candidateInfo)
+        public IActionResult Approve(string candidateInfo)
+        {
+            return ProcessCandidate(candidateInfo, true);
+        }
+
+        private IActionResult ProcessCandidate(string candidateInfo, bool approved)
         {
             var candidate = JsonConvert.DeserializeObject<Candidate>(candidateInfo);
-
-            var processedCandidate = new ProcessedCandidate()
-            {
-                Id = candidate.CandidateId,
-                Approved = true,
-                FullName = candidate.FullName,
-                ProfilePicture = candidate.ProfilePicture,
-                Email = candidate.Email,
-                ProcessedCandidateSkills = candidate.Experience.Select(s => new ProcessedCandidateSkill()
-                {
-                    ProcessedCandidateId = candidate.CandidateId,
-                    Skill = new Skill()
-                    {
-                        TechnologyId = s.TechnologyId,
-                        YearsOfExperience = s.YearsOfExperience,
-                        TechnologyName = s.TechnologyName
-                    }
-                }).ToList()
-            };
-
+            var processedCandidate = _mapper.Map<ProcessedCandidate>(candidate);
+            processedCandidate.Approved = approved;
             _context.ProcessedCandidates.Add(processedCandidate);
-            
             _context.SaveChanges();
 
             return RedirectToAction("Index");
@@ -93,7 +58,6 @@ namespace EternalBlue.Controllers
         {
             return View("Confirm", new ConfirmationPageViewModel(){ Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo, FullName = fullName});
         }
-
 
         public async Task<IActionResult> Index()
         {
@@ -141,19 +105,7 @@ namespace EternalBlue.Controllers
                     .Where(c => c.Approved)
                     .ToListAsync();
 
-            model.Candidates = processedCandidates.Select(c => new Candidate()
-            {
-                Email = c.Email,
-                FullName = c.FullName,
-                ProfilePicture = c.ProfilePicture,
-                CandidateId = c.Id,
-                Experience = c.ProcessedCandidateSkills.Select(s => new Data.Skill()
-                {
-                    YearsOfExperience = s.Skill.YearsOfExperience,
-                    TechnologyId = s.Skill.TechnologyId,
-                    TechnologyName = s.Skill.TechnologyName
-                }).ToList()
-            }).ToList();
+            model.Candidates = _mapper.Map<List<Candidate>>(processedCandidates);
 
             return View("Index", model);
         }
