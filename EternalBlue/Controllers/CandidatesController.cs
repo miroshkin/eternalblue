@@ -61,6 +61,8 @@ namespace EternalBlue.Controllers
 
         public async Task<IActionResult> Index()
         {
+            _logger.LogInformation("Hello, this is the index!");
+
             var model = new CandidatesPageViewModel();
 
             var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
