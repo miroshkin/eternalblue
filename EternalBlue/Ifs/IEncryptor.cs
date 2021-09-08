@@ -7,7 +7,7 @@ namespace EternalBlue.Ifs
 {
     public interface IEncryptor
     {
-        public string Decrypt(string cipherText);
+        public string Decrypt(string text);
         public string Encrypt(string text);
     }
 }

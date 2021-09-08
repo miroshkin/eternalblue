@@ -12,9 +12,9 @@ namespace EternalBlue.Ifs
             return Convert.ToBase64String(plainTextBytes);
         }
 
-        public string Decrypt(string encryptedText)
+        public string Decrypt(string text)
         {
-            var base64EncodedBytes = System.Convert.FromBase64String(encryptedText);
+            var base64EncodedBytes = System.Convert.FromBase64String(text);
             return Encoding.UTF8.GetString(base64EncodedBytes);
         }
     }
