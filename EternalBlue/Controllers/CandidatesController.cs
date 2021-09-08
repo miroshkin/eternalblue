@@ -47,12 +47,24 @@ namespace EternalBlue.Controllers
 
         private IActionResult ProcessCandidate(string candidateInfo, bool approved)
         {
-            var candidate =  JsonConvert.DeserializeObject<Candidate>(_encryptor.Decrypt(candidateInfo));
-            var processedCandidate = _mapper.Map<ProcessedCandidate>(candidate);
-            processedCandidate.Approved = approved;
-            _context.ProcessedCandidates.Add(processedCandidate);
-            _context.SaveChanges();
-            TempData["SuccessMessage"] = $"Candidate {candidate.FullName} has been successfully " + (approved ? "approved" : "rejected");
+            try
+            {
+                var candidate = JsonConvert.DeserializeObject<Candidate>(_encryptor.Decrypt(candidateInfo));
+                var processedCandidate = _mapper.Map<ProcessedCandidate>(candidate);
+                processedCandidate.Approved = approved;
+                _context.ProcessedCandidates.Add(processedCandidate);
+                _context.SaveChanges();
+                var message = $"Candidate {candidate.FullName} has been successfully " +
+                              (approved ? "approved" : "rejected");
+                TempData[MessageType.Success] = message;
+                
+                _logger.LogInformation(message);
+            }
+            catch (Exception e)
+            {
+                TempData[MessageType.Error] = e.Message;
+                _logger.LogError(e.Message);
+            }
             return RedirectToAction("Index");
         }
 
@@ -63,8 +75,6 @@ namespace EternalBlue.Controllers
 
         public async Task<IActionResult> Index()
         {
-            _logger.LogInformation("Hello, this is the index!");
-
             var model = new CandidatesPageViewModel();
 
             var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
@@ -150,32 +160,9 @@ namespace EternalBlue.Controllers
                         }
                     }
                 }
-
             }
         }
-
-        private static Func<Candidate, bool> GetResultFilter(List<Func<Candidate, bool>> filtersAll)
-        {
-            Func<Candidate, bool> resultFilter = null;
-            for (int i = 0; i < filtersAll.Count; i++)
-            {
-                if (i == 0)
-                {
-                    resultFilter = filtersAll.ElementAt(0);
-                    continue;
-                }
-
-                resultFilter = GetResultFilter(resultFilter, filtersAll[i]);
-            }
-
-            return resultFilter;
-        }
-
-        private static Func<Candidate, bool> GetResultFilter(Func<Candidate, bool> filter, Func<Candidate, bool> nextFilter)
-        {
-            return candidate => filter(candidate) && nextFilter(candidate);
-        }
-
+        
         private Func<Candidate, bool> GetFilter(string technology, int yearsOfExperience)
         {
             if (technology == "Any")

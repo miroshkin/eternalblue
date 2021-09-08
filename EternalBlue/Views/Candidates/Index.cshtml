@@ -13,7 +13,7 @@
 
 <form method="post" enctype="multipart/form-data" asp-controller="Candidates" asp-action="Index">
     <div class="text-center">
-        @if (TempData["SuccessMessage"] != null)
+        @if (TempData[MessageType.Success] != null)
         {
         <div class="alert alert-success alert-dismissible fade show" role="alert">@TempData["SuccessMessage"].ToString()
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -21,7 +21,7 @@
             </button>
         </div>
         }
-        @if (TempData["ErrorMessage"] != null)
+        @if (TempData[MessageType.Error] != null)
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">@TempData["ErrorMessage"].ToString()
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
