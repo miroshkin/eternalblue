@@ -13,11 +13,11 @@
     </div>
         @if (@Model.Status == CandidateStatus.Approved)
         {
-            <a class="btn btn-success mb-2 ml-2" href='@Url.Action("Approve", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
+            <a class="btn btn-success mb-2 ml-2" href='@Url.Action("Approve", "Candidates", new {CandidateInfo = @Model.CandidateInfo})'>Yes</a>
         }
         @if (@Model.Status == CandidateStatus.Rejected)
         {
-            <a class="btn btn-success mb-2 ml-2" href='@Url.Action("Reject", "Candidates", new {CandidateId = @Model.CandidateId, CandidateInfo = @Model.CandidateInfo})'>Yes</a>
+            <a class="btn btn-success mb-2 ml-2" href='@Url.Action("Reject", "Candidates", new {CandidateInfo = @Model.CandidateInfo})'>Yes</a>
         }
         <a class="btn btn-danger mb-2 ml-2" asp-controller="Candidates" asp-action="Index">No</a>
 </form>

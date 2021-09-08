@@ -24,13 +24,15 @@ namespace EternalBlue.Controllers
         private IIfsDataProvider _dataProvider;
         private IFSContext _context;
         private IMapper _mapper;
+        private IEncryptor _encryptor;
 
-        public CandidatesController(ILogger<CandidatesController> logger, IIfsDataProvider dataProvider, IFSContext context, IMapper mapper)
+        public CandidatesController(ILogger<CandidatesController> logger, IIfsDataProvider dataProvider, IFSContext context, IMapper mapper, IEncryptor encryptor)
         {
             _logger = logger;
             _dataProvider = dataProvider;
             _context = context;
             _mapper = mapper;
+            _encryptor = encryptor;
         }
 
         public IActionResult Reject(string candidateInfo)
@@ -45,18 +47,18 @@ namespace EternalBlue.Controllers
 
         private IActionResult ProcessCandidate(string candidateInfo, bool approved)
         {
-            var candidate = JsonConvert.DeserializeObject<Candidate>(candidateInfo);
+            var candidate =  JsonConvert.DeserializeObject<Candidate>(_encryptor.Decrypt(candidateInfo));
             var processedCandidate = _mapper.Map<ProcessedCandidate>(candidate);
             processedCandidate.Approved = approved;
             _context.ProcessedCandidates.Add(processedCandidate);
             _context.SaveChanges();
-
+            TempData["SuccessMessage"] = $"Candidate {candidate.FullName} has been successfully " + (approved ? "approved" : "rejected");
             return RedirectToAction("Index");
         }
 
-        public IActionResult Confirm(string candidateId, string status, string candidateInfo, string fullName)
+        public IActionResult Confirm(string status, string candidateInfo, string fullName)
         {
-            return View("Confirm", new ConfirmationPageViewModel(){ Status = status, CandidateId = candidateId, CandidateInfo = candidateInfo, FullName = fullName});
+            return View("Confirm", new ConfirmationPageViewModel(){ Status = status, CandidateInfo = candidateInfo, FullName = fullName});
         }
 
         public async Task<IActionResult> Index()

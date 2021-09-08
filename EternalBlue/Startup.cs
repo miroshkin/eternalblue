@@ -45,7 +45,11 @@ namespace EternalBlue
                 mc.AddProfile(new IFSMappingProfile());
             }).CreateMapper());
 
+            services.AddSingleton<IEncryptor, Encryptor>();
+            
             services.AddControllersWithViews();
+            services.AddSingleton<ITempDataProvider, CookieTempDataProvider>();
+
             services.AddSession();
         }
 
