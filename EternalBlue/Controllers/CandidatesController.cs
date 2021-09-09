@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Policy;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using EternalBlue.Data;
 using EternalBlue.Ifs;
 using EternalBlue.Models;
@@ -14,7 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Skill = EternalBlue.Models.Skill;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EternalBlue.Controllers
 {
@@ -56,53 +53,97 @@ namespace EternalBlue.Controllers
                 _context.SaveChanges();
                 var message = $"Candidate {candidate.FullName} has been successfully " +
                               (approved ? "approved" : "rejected");
-                TempData[MessageType.Success] = message;
+                TempData[TempDataType.SuccessMessage] = message;
                 
                 _logger.LogInformation(message);
             }
             catch (Exception e)
             {
-                TempData[MessageType.Error] = e.Message;
+                TempData[TempDataType.ErrorMessage] = e.Message;
                 _logger.LogError(e.Message);
             }
             return RedirectToAction("Index");
         }
 
-        public IActionResult Confirm(string status, string candidateInfo, string fullName)
+        public IActionResult Confirm(string status, string candidateInfo, string fullName, int? selectedExperience, string selectedTechnology)
         {
+            TempData[TempDataType.SelectedTechnology] = selectedTechnology;
+            TempData[TempDataType.SelectedExperience] = selectedExperience;
             return View("Confirm", new ConfirmationPageViewModel(){ Status = status, CandidateInfo = candidateInfo, FullName = fullName});
         }
 
         public async Task<IActionResult> Index()
         {
-            var model = new CandidatesPageViewModel();
+            if (TempData["SelectedTechnology"] != null & TempData["SelectedExperience"] != null)
+            {
+                var model = new CandidatesPageViewModel();
+                model.SelectedTechnology = TempData["SelectedTechnology"].ToString();
+                model.SelectedExperience = Convert.ToInt32(TempData["SelectedExperience"]);
 
-            var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
-            var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
-            var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
+                var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
+                var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
+                var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
 
-            model.Candidates = candidates.Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
+                var filteredCandidates = candidates.Where(GetFilter(model.SelectedTechnology, model.SelectedExperience))
+                    .Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
 
+                LoadTechnologies(model, technologies);
+                LoadYearsOfExperience(model);
 
-            FillSkillNames(model.Candidates, technologies);
+                SelectTechnology(model);
+                SelectExperience(model);
 
-            LoadTechnologies(model, technologies);
-            LoadYearsOfExperience(model);
+                FillSkillNames(filteredCandidates, technologies);
+                model.Candidates = filteredCandidates;
 
-            return View(model);
+                return View(model);
+            }
+            else
+            {
+                var model = new CandidatesPageViewModel();
+                var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
+                LoadTechnologies(model, technologies);
+                LoadYearsOfExperience(model);
+
+                return View(model);
+            }
+        }
+
+        private void SelectExperience(CandidatesPageViewModel model)
+        {
+            foreach (var item in model.YearsOfExperience)
+            {
+                if (item.Value == model.SelectedExperience.ToString())
+                {
+                    item.Selected = true;
+                    break;
+                }
+            }
+        }
+
+        private void SelectTechnology(CandidatesPageViewModel model)
+        {
+            foreach (var item in model.Technologies)
+            {
+                if (item.Value == model.SelectedTechnology)
+                {
+                    item.Selected = true;
+                    break;
+                }
+            }
         }
 
         private void LoadYearsOfExperience(CandidatesPageViewModel model)
         {
             model.YearsOfExperience = new List<SelectListItem>();
-            model.YearsOfExperience.Add(new SelectListItem("Any", "0", true));
+            model.YearsOfExperience.Add(new SelectListItem("Any", "0"));
             model.YearsOfExperience.AddRange(Enumerable.Range(1, IFSHelper.GetFortranAge()).Select(c => new SelectListItem(c.ToString(),c.ToString())));
         }
 
         private static void LoadTechnologies(CandidatesPageViewModel model, ICollection<Technology> technologies)
         {
             model.Technologies = new List<SelectListItem>();
-            model.Technologies.Add(new SelectListItem("Any", "Any", true));
+            model.Technologies.Add(new SelectListItem("Any", "Any"));
             model.Technologies.AddRange(technologies.Select(t => new SelectListItem(t.Name, t.TechnologyId.ToString()))
                 .OrderBy(t => t.Text).ToList());
         }
@@ -125,25 +166,32 @@ namespace EternalBlue.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(string technology, int yearsOfExperience)
+        public async Task<IActionResult> Index(CandidatesPageViewModel model)
         {
-            var model = new CandidatesPageViewModel();
+            if (ModelState.IsValid)
+            {
+                var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
+                var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
+                var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
 
-            var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
-            var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
-            var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
+                var filteredCandidates = candidates.Where(GetFilter(model.SelectedTechnology, model.SelectedExperience))
+                    .Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
 
+                FillSkillNames(filteredCandidates, technologies);
+                model.Candidates = filteredCandidates;
 
-            var filteredCandidates = candidates.Where(GetFilter(technology, yearsOfExperience))
-                .Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
+                LoadTechnologies(model, technologies);
+                LoadYearsOfExperience(model);
+                return View(model);
+            }
 
-            FillSkillNames(filteredCandidates, technologies);
-            model.Candidates = filteredCandidates;
-
-            LoadTechnologies(model, technologies);
-            LoadYearsOfExperience(model);
-
-            return View(model);
+            else
+            {
+                var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
+                LoadTechnologies(model, technologies);
+                LoadYearsOfExperience(model);
+                return View(model);
+            }
         }
 
         private void FillSkillNames(ICollection<Candidate> candidates, ICollection<Technology> technologies)
@@ -163,7 +211,7 @@ namespace EternalBlue.Controllers
             }
         }
         
-        private Func<Candidate, bool> GetFilter(string technology, int yearsOfExperience)
+        private Func<Candidate, bool> GetFilter(string technology, int? yearsOfExperience)
         {
             if (technology == "Any")
             {
