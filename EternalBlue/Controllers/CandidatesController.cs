@@ -32,29 +32,34 @@ namespace EternalBlue.Controllers
             _encryptor = encryptor;
         }
 
-        public IActionResult Reject(string candidateInfo)
+        public async Task<IActionResult> Reject(string candidateInfo)
         {
-            return ProcessCandidate(candidateInfo, false);
+            return await ProcessCandidate(candidateInfo, false, new CancellationToken());
         }
 
-        public IActionResult Approve(string candidateInfo)
+        public async Task<IActionResult> Approve(string candidateInfo)
         {
-            return ProcessCandidate(candidateInfo, true);
+            return await ProcessCandidate(candidateInfo, true, new CancellationToken());
         }
 
-        private IActionResult ProcessCandidate(string candidateInfo, bool approved)
+        private async Task<IActionResult> ProcessCandidate(string candidateInfo, bool approved, CancellationToken ct)
         {
             try
             {
                 var candidate = JsonConvert.DeserializeObject<Candidate>(_encryptor.Decrypt(candidateInfo));
                 var processedCandidate = _mapper.Map<ProcessedCandidate>(candidate);
                 processedCandidate.Approved = approved;
-                _context.ProcessedCandidates.Add(processedCandidate);
-                _context.SaveChanges();
+                
+                await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+
+                await _context.ProcessedCandidates.AddAsync(processedCandidate, ct);
+                await _context.SaveChangesAsync(ct);
+                
+                await transaction.CommitAsync(ct);
+
                 var message = $"Candidate {candidate.FullName} has been successfully " +
                               (approved ? "approved" : "rejected");
                 TempData[TempDataType.SuccessMessage] = message;
-                
                 _logger.LogInformation(message);
             }
             catch (Exception e)
