@@ -137,7 +137,7 @@ namespace EternalBlue.Controllers
         {
             model.YearsOfExperience = new List<SelectListItem>();
             model.YearsOfExperience.Add(new SelectListItem("Any", "0"));
-            model.YearsOfExperience.AddRange(Enumerable.Range(1, IFSHelper.GetFortranAge()).Select(c => new SelectListItem(c.ToString(),c.ToString())));
+            model.YearsOfExperience.AddRange(Enumerable.Range(1, IFSHelper.GetFortranAge()).Select(c => new SelectListItem($"{c.ToString()} year(s)",c.ToString())));
         }
 
         private static void LoadTechnologies(CandidatesPageViewModel model, ICollection<Technology> technologies)

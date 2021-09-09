@@ -22,7 +22,7 @@ namespace EternalBlue.Ifs
         }
 
         /// <summary>
-        /// Gets the oldest language that is still in use
+        /// Gets the age of the oldest language that is still in use
         /// https://www.learnacademy.org/blog/first-programming-language-use-microsoft-apple/
         /// </summary>
         /// <returns>Fortran programming language age in years</returns>
