@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using EternalBlue.Data;
 using EternalBlue.Models;
+using RecruitmentService;
+using Candidate = EternalBlue.Data.Candidate;
 
 namespace EternalBlue.Mapping
 {
@@ -28,6 +29,15 @@ namespace EternalBlue.Mapping
                 .ForMember(c => c.YearsOfExperience, cfg => cfg.MapFrom(c => c.YearsOfExperience))
                 .ForMember(c => c.TechnologyId, cfg => cfg.MapFrom(c => c.TechnologyId))
                 .ForMember(c => c.TechnologyName, cfg => cfg.MapFrom(c => c.TechnologyName))
+                .ReverseMap();
+
+            CreateMap<RecruitmentService.Candidate, Candidate>()
+                .ForMember(c => c.CandidateId, cfg => cfg.MapFrom(c => c.CandidateId))
+                .ForMember(c => c.Email, cfg => cfg.MapFrom(c => c.Email));
+
+            CreateMap<RecruitmentService.Skill, Data.Skill>()
+                .ForMember(c => c.YearsOfExperience, cfg => cfg.MapFrom(c => c.YearsOfExperience))
+                .ForMember(c => c.TechnologyId, cfg => cfg.MapFrom(c => c.TechnologyId))
                 .ReverseMap();
         }
     }

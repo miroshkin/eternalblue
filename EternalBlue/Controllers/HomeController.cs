@@ -14,6 +14,7 @@ using EternalBlue.Ifs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using RecruitmentService;
 
 namespace EternalBlue.Controllers
 {
@@ -21,6 +22,7 @@ namespace EternalBlue.Controllers
     {
         public IActionResult Index()
         {
+            
             return View();
         }
 

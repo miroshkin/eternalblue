@@ -15,6 +15,7 @@ using EternalBlue.Models;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using RecruitmentService;
 
 namespace EternalBlue
 {
@@ -32,6 +33,8 @@ namespace EternalBlue
         {
             services.AddDbContext<IFSContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString(nameof(IFSContext))));
+
+            services.AddSingleton<IRecruitmentService, RecruitmentServiceClient>();
 
             services.Configure<IFSApiConfiguration>(Configuration.GetSection(nameof(IFSApiConfiguration)))
                 .AddHttpClient<IIfsDataProvider, IfsDataProvider>((serviceProvider, clientCfg) =>

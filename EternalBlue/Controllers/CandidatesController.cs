@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using RecruitmentService;
+using Candidate = EternalBlue.Data.Candidate;
+using Technology = EternalBlue.Data.Technology;
 
 namespace EternalBlue.Controllers
 {
@@ -22,14 +25,16 @@ namespace EternalBlue.Controllers
         private IFSContext _context;
         private IMapper _mapper;
         private IEncryptor _encryptor;
+        private IRecruitmentService _client;
 
-        public CandidatesController(ILogger<CandidatesController> logger, IIfsDataProvider dataProvider, IFSContext context, IMapper mapper, IEncryptor encryptor)
+        public CandidatesController(ILogger<CandidatesController> logger, IIfsDataProvider dataProvider, IFSContext context, IMapper mapper, IEncryptor encryptor, IRecruitmentService client)
         {
             _logger = logger;
             _dataProvider = dataProvider;
             _context = context;
             _mapper = mapper;
             _encryptor = encryptor;
+            _client = client;
         }
 
         public async Task<IActionResult> Reject(string candidateInfo)
@@ -85,9 +90,16 @@ namespace EternalBlue.Controllers
                 model.SelectedTechnology = TempData["SelectedTechnology"].ToString();
                 model.SelectedExperience = Convert.ToInt32(TempData["SelectedExperience"]);
 
-                var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
+                
+                var candidatesSoap = await _client.GetCandidatesAsync();
+                //var technologiesSoap = await client.GetTechnologiesAsync();
+
+
+                //var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
                 var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
                 var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
+
+                var candidates = _mapper.Map<List<Candidate>>(candidatesSoap);
 
                 var filteredCandidates = candidates.Where(GetFilter(model.SelectedTechnology, model.SelectedExperience))
                     .Where(c => !processedCandidates.Exists(p => p.Id == c.CandidateId)).ToList();
@@ -175,7 +187,10 @@ namespace EternalBlue.Controllers
         {
             if (ModelState.IsValid)
             {
-                var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
+                var candidatesSoap = await _client.GetCandidatesAsync();
+                var candidates = _mapper.Map<List<Candidate>>(candidatesSoap.ToList());
+
+                //var candidates = await _dataProvider.GetItems<Candidate>(IFSHelper.GetResourceName(typeof(Candidate)), new CancellationToken());
                 var technologies = await _dataProvider.GetItems<Technology>(IFSHelper.GetResourceName(typeof(Technology)), new CancellationToken());
                 var processedCandidates = await _context.ProcessedCandidates.AsNoTracking().ToListAsync();
 
